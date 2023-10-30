@@ -1,0 +1,9 @@
+{
+    "files.associations": {
+        "inet.h": "c",
+        "socket_list.h": "c",
+        "reliable.h": "c",
+        "pthread.h": "c",
+        "signal.h": "c"
+    }
+}
