@@ -17,6 +17,15 @@ int pippo; //porta comunicazione thread_server<->client
 struct sockaddr_in server_addr;
 int sockfd;
 int error_port;
+
+int variable = 0;
+
+void timer_handler(int signo) {
+    if (variable == 0) {
+        printfclr(1,"->The server has left the network\n");
+        exit(1);
+    }
+}
 // Funzione di gestione del segnale SIGTERM
 void gestione_sigterm(int segnale) {
     char tosend[16];
@@ -25,12 +34,14 @@ void gestione_sigterm(int segnale) {
     printfclr(1,"\n->gestisco il segnale ctrl+C.  Chiusura socket %s\n",tosend);
     
     server_addr.sin_port = htons(error_port);
+    signal(SIGALRM, timer_handler); // Imposta il gestore per il segnale di allarme
+    alarm(1); // Imposta un timer di 5 secondi
     int snd_byte=send_r(sockfd,tosend,16, (struct sockaddr *)&server_addr, sizeof(server_addr));
     if(snd_byte==-1){
         perror("error in sendind signal to server");
         exit(1);
     }
-    printf("exit\n");
+    alarm(0);// cancello il timer
     close(socket);
     exit(1); // Terminazione pulita
 }
