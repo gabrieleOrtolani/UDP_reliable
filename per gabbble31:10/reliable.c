@@ -25,7 +25,7 @@ typedef struct {
 
 int verbose =0;
 int blocking = 1;
-int reliable =0; // se 1  usa reliable
+int reliable =0; // se 1 usa reliable
 
 int error(const char *msg);
 int min(int a, int b);
@@ -261,7 +261,7 @@ int send_r( int socket_fd, char* buffer, long size, struct sockaddr *server_addr
 
         if (ptr < buffer + (int)size){
             for(int i = 0 ; i< cwnd; i++){
-                if (rand()%100<97){
+                if (rand()%100<100){
                     if(buffer+size <= ptr) break;
 
                     memset(&send_packet.data,(int)'\0',MSS); 

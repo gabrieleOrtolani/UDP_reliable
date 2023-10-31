@@ -35,7 +35,7 @@ void gestione_sigterm(int segnale) {
     
     server_addr.sin_port = htons(error_port);
     signal(SIGALRM, timer_handler); // Imposta il gestore per il segnale di allarme
-    alarm(1); // Imposta un timer di 5 secondi
+    alarm(5); // Imposta un timer di 5 secondi
     int snd_byte=send_r(sockfd,tosend,16, (struct sockaddr *)&server_addr, sizeof(server_addr));
     if(snd_byte==-1){
         perror("error in sendind signal to server");
@@ -75,10 +75,8 @@ int main(int argc, char **argv) {
         close(sockfd);
         exit(EXIT_FAILURE);
     }
-    
     /*da questo momento in poi controllo SIGTERM*/
 
-    
     struct sigaction sa;
     sa.sa_handler = gestione_sigterm;
     // Imposta il gestore di segnali per SIGTERM

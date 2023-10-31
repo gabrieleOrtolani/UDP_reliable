@@ -18,9 +18,11 @@ struct SocketNode *error_node;
 
 
 void * client_handle(void *data){
-        
-    struct sockaddr *addr=(struct sockaddr*)data;
-   
+
+    //struct sockaddr *addr  =(struct sockaddr*)data;
+    struct sockaddr *addr=malloc(sizeof(struct sockaddr *));
+    memcpy(addr,data,sizeof(struct sockaddr));
+    free(data);
     
     // Creazione di un nuovo nodo con una socket pronta per l'uso
     struct SocketNode *thread_socket_node = crea_socket_node();
@@ -53,7 +55,8 @@ void * client_handle(void *data){
         perror("error sending threa dinfo to client");
         exit(1);
     }else{
-        int rcv_byte  = rcvfrom_r(thread_sockfd,rcv_buffer,MAX_BUFFER_LEN, 0,0);
+        socklen_t len = sizeof(struct sockaddr);
+        int rcv_byte  = rcvfrom_r(thread_sockfd,rcv_buffer,MAX_BUFFER_LEN,addr,&len);
         if (rcv_byte==-1){
             perror("rcv ack from client error");
             exit(1);
@@ -114,10 +117,12 @@ void *error_handle(struct SocketNode error_private_socket){
     printfclr(3,"->error_socket fd:%d\tport:%d\tip:%s\n",error_node->sockfd,ntohs(error_node->addr.sin_port),inet_ntoa(error_node->addr.sin_addr)); 
 
     int sock_fd_error = ottieni_socket(&error_private_socket);
+    pthread_exit(NULL);
     while(1){
 
         char *buffer_error=malloc(sizeof(char)*20);
-        int rcv_error=rcvfrom_r(sock_fd_error,buffer_error,20,0,0);
+        printf("ASPETTO ERRORI\n");
+        int rcv_error=rcvfrom_r(sock_fd_error,buffer_error,20,NULL,NULL);
         printfclr(1,"%s\n",buffer_error);
         if(rcv_error==-1){
             perror("error in rcv error from client");
@@ -148,23 +153,29 @@ int main(int argc, char**argv){
     printfclr(3,"->main_socket fd:%d\tport:%d\tip:%s\n",main_socket_node->sockfd,ntohs(main_socket_node->addr.sin_port),inet_ntoa(main_socket_node->addr.sin_addr)); // stampo fd della main socket
     
     /*INIZZIALIZZO thread ERRORE*/
-/*    error_node = crea_socket_node();
+    
+    error_node = crea_socket_node();
     pthread_t error_tid;
     if(pthread_create(&error_tid,NULL,(void*)error_handle,(void*)error_node)==-1){
         perror("Error in creating thread ");
     }
 
- */
+    
+    int i=0;
+    printf("%d\n",i);
+    char buffer[1024];
     while(1){
+        printf("%d\n",i);
         
-        char *buffer=malloc(sizeof(char)*3);
         void *addr = (struct sockaddr *)malloc(sizeof(struct sockaddr));
-        bzero(addr,sizeof(struct sockaddr *));
+        
         socklen_t len = sizeof(struct sockaddr);
         main_socket_node->addr.sin_port = htons(55555);
-        bzero(buffer,sizeof(char)*3);
+        bzero(buffer,sizeof(char)*1024);
+        memset(buffer,0,sizeof(char)*1024);
+        printf("%s\n",buffer);
         printfclr(3,"->Pronto per una nuova connesione\n");
-        int bytes_received = rcvfrom_r(sockfd_main, buffer, 3, addr, &len);
+        int bytes_received = rcvfrom_r(sockfd_main, buffer, sizeof(char)*3, addr, &len);
         if (bytes_received == -1) {
             perror("Errore nella rcvfrom_r");
             continue; // Continua a rimanere in ascolto per altri pacchetti
@@ -176,14 +187,12 @@ int main(int argc, char**argv){
                 perror("Error in creating thread ");
                 continue;
             }
-            printf("%d-%p\n",bytes_received,addr);
-            break;
-        }
-        
+            i++;
 
-        
+            printf("%d-%p\n",bytes_received,addr);
+            
+        }       
     }   
-    while(1);
     stampa_coda(socketList);
     libera_lista(socketList);
 
