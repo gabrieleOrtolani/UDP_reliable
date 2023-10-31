@@ -247,7 +247,7 @@ int send_r( int socket_fd, char* buffer, long size, struct sockaddr *server_addr
     struct timeval  tv;
     fd_set  rfds;
     tv.tv_sec = 0;
-    tv.tv_usec = RTT_mics*2;
+    tv.tv_usec = RTT_mics*100;
 
     FD_ZERO(&rfds);
 
@@ -338,15 +338,13 @@ int send_r( int socket_fd, char* buffer, long size, struct sockaddr *server_addr
                 }
             }
         }else{
-            seq2send -= count;
-            ptr = &(buffer[seq2send * MSS]);
+            if(verbose)(printf("Failed to recive ACK #%d, quitting...", expected_ack_number));
+            return -1;
         } 
     }
     if(verbose)(printf("END ACK #%d ...\tExpecting 2 be %d\n",atoi(recv_packet.ack_n), expected_ack_number));
     if(verbose)(printf("Quitting: %ld bytes corretly sent\n",size));
-    usleep(RTT_mics);
 
     return totcount - MSS + endbytes;
-
 }
 
