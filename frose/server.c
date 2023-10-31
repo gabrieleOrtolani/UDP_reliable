@@ -154,11 +154,11 @@ int main(int argc, char**argv){
         perror("Error in creating thread ");
     }
 
-    char *buffer=malloc(sizeof(char)*3);
-    void *addr = (struct sockaddr *)malloc(sizeof(struct sockaddr));
+ 
     while(1){
     
-        
+        char *buffer=malloc(sizeof(char)*3);
+        void *addr = (struct sockaddr *)malloc(sizeof(struct sockaddr));
         bzero(addr,sizeof(struct sockaddr *));
         socklen_t len = sizeof(struct sockaddr);
         main_socket_node->addr.sin_port = htons(55555);
@@ -170,13 +170,16 @@ int main(int argc, char**argv){
             continue; // Continua a rimanere in ascolto per altri pacchetti
         }
         printfclr(3,"->Ricevuto:%s.Nuovo thread in creazione\n",buffer);
-     
-        pthread_t tid;
-        if(pthread_create(&tid,NULL,(void*)client_handle,(void *)addr)==-1){
-            perror("Error in creating thread ");
-            continue;
+        if(strncmp(buffer, "SYN", 3)==0){
+            pthread_t tid;
+            if(pthread_create(&tid,NULL,(void*)client_handle,(void *)addr)==-1){
+                perror("Error in creating thread ");
+                continue;
+            }
+            printf("%d-%p\n",bytes_received,addr);
         }
-        printf("%d-%p\n",bytes_received,addr);
+        
+
         
     }   
     stampa_coda(socketList);
