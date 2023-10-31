@@ -225,12 +225,12 @@ int rcvfrom_r(int socket_fd, void *buffer, size_t length, struct sockaddr *clien
     }
 
 
-    //usleep(RTT_mics);
     return ((expected_seq_n-1) * MSS) + bytes_end;
 }
 
 int send_r( int socket_fd, char* buffer, long size, struct sockaddr *server_addr, socklen_t server_len){
-        if (reliable){
+
+    if (reliable){
         int rcv_byte=sendto(socket_fd,buffer,size,0,server_addr,server_len);
         if(rcv_byte==-1){
             perror("error in recvfrom");
@@ -238,8 +238,9 @@ int send_r( int socket_fd, char* buffer, long size, struct sockaddr *server_addr
         printf("notrel\n");
         return rcv_byte;
     }
+
     Packet send_packet, recv_packet;
-    int cwnd = 1, ok = 1;
+    int cwnd = 1;
     int count = 0, totcount = 0, endbytes = 0, lastcwnd;
     int expected_ack_number = cwnd;
     int seq2send = 0;
@@ -291,14 +292,13 @@ int send_r( int socket_fd, char* buffer, long size, struct sockaddr *server_addr
         }
         // Receive ACK
         FD_SET(socket_fd, &rfds);
-        select(socket_fd+1, &rfds, NULL , NULL , &tv);
+        select(socket_fd+1, &rfds, NULL , NULL , NULL);
 
         if(FD_ISSET(socket_fd, &rfds)){
             if (recvfrom(socket_fd, &recv_packet, sizeof(Packet), 0, server_addr, &server_len)==-1){
                 return error("error:");
             }
 
-            ok = 1;
             //correct acking, evrything went well
             if (atoi(recv_packet.ack_n) == expected_ack_number){          
                 cwnd  += cwnd;
