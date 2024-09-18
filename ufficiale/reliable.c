@@ -57,6 +57,7 @@ int rcvfrom_r(int socket_fd, void *buffer, size_t length, struct sockaddr *clien
         printf("notrel\n");
         return rcv_byte;
     }
+    FILE *file_log = fopen("pippo.txt","a");
     Packet recv_packet, ack_packet;
     int   gap, loss, totcount = 0, randn = 0, ack2send = 0, endack = -1;
     int  expected_seq_n = 0;
@@ -170,7 +171,7 @@ int rcvfrom_r(int socket_fd, void *buffer, size_t length, struct sockaddr *clien
             fflush(stdout);
         }
 
-         if(datadisplay)(printf("%ld\n",count));
+        if(datadisplay)(printf("%ld\n",count));
 
         for(int i = 0; i<buffMSS; i++){
             if (buffvect[i] != -1){
